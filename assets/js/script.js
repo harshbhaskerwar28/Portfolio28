@@ -199,16 +199,26 @@ themeToggle.addEventListener('change', updateBorderColor);
 
 
 
-document.querySelector(".form").addEventListener("submit", function (e) {
-    e.preventDefault(); // Prevent form from submitting traditionally
-
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formMessage = document.getElementById('formMessage');
     const formData = new FormData(this);
-
-    fetch("send_email.php", {
-        method: "POST",
-        body: formData,
+    
+    fetch('send_email.php', {
+        method: 'POST',
+        body: formData
     })
-        .then(response => response.text())
-        .then(data => alert(data)) // Display success or failure message
-        .catch(error => console.error("Error:", error));
+    .then(response => response.json())
+    .then(data => {
+        formMessage.innerHTML = data.message;
+        formMessage.style.color = data.status === 'success' ? 'green' : 'red';
+        if(data.status === 'success') {
+            this.reset();
+        }
+    })
+    .catch(error => {
+        formMessage.innerHTML = 'An error occurred. Please try again.';
+        formMessage.style.color = 'red';
+    });
 });
