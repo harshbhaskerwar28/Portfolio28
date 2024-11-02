@@ -203,30 +203,53 @@ document.getElementById('contactForm').addEventListener('submit', async function
     e.preventDefault();
     
     const formMessage = document.getElementById('formMessage');
-    formMessage.innerHTML = 'Sending...';
+    const formBtn = document.querySelector('.form-btn');
+    const originalBtnText = formBtn.innerHTML;
+    
+    // Show sending state
+    formBtn.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon><span>Sending...</span>';
+    formMessage.textContent = '';
     
     try {
-        const formData = new FormData(this);
+        const formData = {
+            name: this.fullname.value,
+            email: this.email.value,
+            message: this.message.value
+        };
         
-        const response = await fetch('./send_email.php', {
+        const response = await fetch('https://formsubmit.co/ajax/9849475949harsh@gmail.com', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                ...formData,
+                _template: 'custom',
+                _subject: `New message from ${formData.name}`,
+                _autoresponse: `Dear ${formData.name},
+
+Thank you for contacting us. We have received your message and will get back to you soon.
+
+Best regards,
+[Your Name/Company]`
+            })
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
         const data = await response.json();
-        formMessage.innerHTML = data.message;
-        formMessage.style.color = data.status === 'success' ? 'green' : 'red';
         
-        if(data.status === 'success') {
+        if (data.success) {
+            formMessage.textContent = 'Message sent successfully!';
+            formMessage.style.color = 'green';
             this.reset();
+        } else {
+            throw new Error('Failed to send message');
         }
     } catch (error) {
-        console.error('Error:', error);
-        formMessage.innerHTML = `Error: ${error.message}. Please try again.`;
+        formMessage.textContent = 'Failed to send message. Please try again.';
         formMessage.style.color = 'red';
+    } finally {
+        // Restore button state
+        formBtn.innerHTML = originalBtnText;
     }
 });
