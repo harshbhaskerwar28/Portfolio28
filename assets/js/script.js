@@ -199,26 +199,34 @@ themeToggle.addEventListener('change', updateBorderColor);
 
 
 
-document.getElementById('contactForm').addEventListener('submit', function(e) {
+document.getElementById('contactForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const formMessage = document.getElementById('formMessage');
-    const formData = new FormData(this);
+    formMessage.innerHTML = 'Sending...';
     
-    fetch('send_email.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
+    try {
+        const formData = new FormData(this);
+        
+        const response = await fetch('./send_email.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
         formMessage.innerHTML = data.message;
         formMessage.style.color = data.status === 'success' ? 'green' : 'red';
+        
         if(data.status === 'success') {
             this.reset();
         }
-    })
-    .catch(error => {
-        formMessage.innerHTML = 'An error occurred. Please try again.';
+    } catch (error) {
+        console.error('Error:', error);
+        formMessage.innerHTML = `Error: ${error.message}. Please try again.`;
         formMessage.style.color = 'red';
-    });
+    }
 });
