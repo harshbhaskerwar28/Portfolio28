@@ -199,16 +199,25 @@ themeToggle.addEventListener('change', updateBorderColor);
 
 
 
-document.querySelector(".form").addEventListener("submit", function (e) {
-    e.preventDefault(); // Prevent form from submitting traditionally
-
-    const formData = new FormData(this);
-
-    fetch("send_email.php", {
-        method: "POST",
-        body: formData,
-    })
-        .then(response => response.text())
-        .then(data => alert(data)) // Display success or failure message
-        .catch(error => console.error("Error:", error));
+document.querySelector(".form").addEventListener("submit", function(e) {
+  e.preventDefault();
+  
+  const name = document.querySelector('[name="fullname"]').value;
+  const email = document.querySelector('[name="email"]').value;
+  const message = document.querySelector('[name="message"]').value;
+  
+  // Create email content
+  const mailtoLink = `mailto:9849475949harsh@gmail.com?subject=Contact from ${name}&body=Name: ${name}%0D%0AEmail: ${email}%0D%0A%0D%0AMessage:%0D%0A${message}`;
+  
+  // Open email client
+  window.location.href = mailtoLink;
+  
+  // Backup: Copy to clipboard
+  const textToCopy = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
+  navigator.clipboard.writeText(textToCopy)
+      .then(() => {
+          alert('Form data copied to clipboard! If email client didn\'t open, you can paste this information into an email.');
+          this.reset(); // Reset form
+          formBtn.setAttribute("disabled", ""); // Reset button state
+      });
 });
